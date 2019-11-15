@@ -5,3 +5,27 @@
 - Learn how to edit, validate and view HTML pages 
 - worked through examples of SPARQL queries 
 - experimented with Wikidata SPARQL queries 
+
+15-11-2019
+- figure out how to access external endpoints
+- figure out biological question.
+    What human pathways contain genes associated with Major Depressive Disorder?
+- Match wikidata with biological question
+- List the Wikidata properties you need for your SPARQL
+  SELECT DISTINCT ?geneLabel ?diseaseLabel ?pathwayLabel 
+WHERE {
+  ?disease	wdt:P2293 ?gene .    # genetic association between disease and gene
+  ?disease wdt:P279*  wd:Q42844 .  # limit to major depressive disorder (the * operator runs up a transitive relation..)
+  ?pathway wdt:P31 wd:Q4915012 ;
+           wdt:P527 ?gene .
+  #?gene wdt:P688 ?gene_product .  # gene_product (usually a protein) is a product of a gene (a region of DNA)
+  #?drug wdt:P129 ?pathway .
+  
+
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "en" .
+	}
+  }
+  
+  
+ 
