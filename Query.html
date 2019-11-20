@@ -12,7 +12,6 @@
   .tab td{
     padding: 10px;
   }
-
 </style>
 </head>
 
@@ -33,23 +32,19 @@
   ).then( wdk.simplify.sparqlResults
   ).then(
     function (response) {
-
         var i;
         var wpURL = 'https://www.wikipathways.org/index.php/Pathway:';
         for (i = 0; i < response.length; i++) {
           var id = response[i].pathwayID;
           fullURL = wpURL + id;
         }
-
         var tr = d3.select(".tabl tbody")
                    .selectAll("tr")
                    .data(response)
                    .enter().append("tr");
-
         var td = tr.selectAll("td").data(function(d, i) { return Object.values(d); })
                    .enter().append("td")
                    .text(function(d) { return d; });
-
                 // WIKIPATHWAYS
        var j;
        var wpVALUES = "VALUES ?pwID {";
@@ -58,25 +53,19 @@
            wpVALUES = wpVALUES + idURL + response[j].pathwayID + "> ";
        }
        wpVALUES = wpVALUES + "}"
-
        query_wp =  `
                     PREFIX wp:      <http://vocabularies.wikipathways.org/wp#>
-
-                    SELECT DISTINCT ?pwID ?pathway ?interaction ?participants ?DataNodeLabel WHERE {` + wpVALUES + `
-                    ?pathway a wp:Pathway .
-                    ?pathway dc:identifier ?pwID .
-                    ?interaction dcterms:isPartOf ?pathway .
-                    ?interaction a wp:Interaction .
-                    ?interaction wp:participants ?participants .
-                    ?participants a wp:DataNode .
-                    ?participants rdfs:label ?DataNodeLabel .
-                  }
+                    SELECT DISTINCT ?pwID ?pathway ?interaction ?source ?target 
+                    WHERE {` + wpVALUES + `
+                      ?pathway a wp:Pathway .
+                      ?pathway dc:identifier ?pwID .
+                      ?interaction dcterms:isPartOf ?pathway .
+                      ?interaction a wp:Interaction .
+                      ?interaction wp:source ?source .
+                      ?interaction wp:target ?target .}
                   ORDER BY ?pwID`;
-
        console.log(query_wp);
-
        wpURL =  "http://sparql.wikipathways.org/";
-
        var queryUrl = encodeURI( wpURL + "?query="+query_wp+"&format=json" );
        $.ajax({
           dataType: "jsonp",
@@ -87,8 +76,6 @@
        });
     }
   )
-
-
 </script>
 </body>
 </html>
