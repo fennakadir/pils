@@ -1,28 +1,81 @@
-
 <html>
 <head>
-<!-- Initialize a global WBK function -->
-<script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikibase-sdk.min.js"></script>
-<!-- Initialize a global wdk object using the WBK object -->
-<script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikidata-sdk.min.js"></script>
+  <!-- Initialize a global WBK function -->
+  <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikibase-sdk.min.js"></script>
+  <!-- Initialize a global wdk object using the WBK object -->
+  <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikidata-sdk.min.js"></script>
+  <!-- Initialize d3 library -->
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <!-- AJAX -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<style>
+  .tab td{
+    padding: 10px;
+  }
+
+</style>
 </head>
 
 <body>
+  <table class="tabl">
+    <thead >
+      <th>Gene</th><th>Pathway</th><th>WikiPathwayID</th>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 <pre id="output"></pre>
 <script>
-  query = 'SELECT ?geneLabel ?diseaseLabel ?pathwayLabel ?pathwayID WHERE { ?disease	wdt:P2293 ?gene . ?disease wdt:P279*  wd:Q55950055. ?pathway wdt:P31 wd:Q4915012 ; wdt:P527 ?gene . ?pathway wdt:P2410 ?pathwayID SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}';
+  query_wikidata = 'SELECT ?geneLabel ?pathwayLabel ?pathwayID WHERE { ?disease	wdt:P2293 ?gene . ?disease wdt:P279*  wd:Q55950055. ?pathway wdt:P31 wd:Q4915012 ; wdt:P527 ?gene . ?pathway wdt:P2410 ?pathwayID SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}';
   fetch(
-    wdk.sparqlQuery(query)
+    wdk.sparqlQuery(query_wikidata)
   ).then( response => response.json()
   ).then( wdk.simplify.sparqlResults
   ).then(
     function (response) {
-      document.getElementById('output').innerHTML =
-        JSON.stringify(response, undefined, 2);
-        var data = JSON.stringify(response, undefined, 2);
-        console.log(data);
-    }
-  )
+
+        var i;
+        var wpURL = 'https://www.wikipathways.org/index.php/Pathway:';
+        for (i = 0; i < response.length; i++) {
+          var id = response[i].pathwayID;
+          fullURL = wpURL + id;
+        }
+
+        var tr = d3.select(".tabl tbody")
+                   .selectAll("tr")
+                   .data(response)
+                   .enter().append("tr");
+
+        var td = tr.selectAll("td").data(function(d, i) { return Object.values(d); })
+                   .enter().append("td")
+                   .text(function(d) { return d; });
+
+                // WIKIPATHWAYS
+       var j;
+       var wpVALUES = "VALUES ?wpID {";
+       var idURL = "<http://identifiers.org/wikipathways/"
+       for (j = 0; j < response.length; j++){
+           wpVALUES = wpVALUES + idURL + response[j].pathwayID + "> ";
+       }
+       wpVALUES = wpVALUES + "}"
+
+       query_wp = "PREFIX wp:    <http://vocabularies.wikipathways.org/wp#> SELECT DISTINCT ?wpID ?pathway ?interaction ?participants ?DataNodeLabel WHERE {" + wpVALUES + " ?pathway a wp:Pathway . ?pathway dc:identifier ?wpID . ?interaction dcterms:isPartOf ?pathway . ?interaction a wp:Interaction . ?interaction wp:participants ?participants . ?participants a wp:DataNode . ?participants rdfs:label ?DataNodeLabel . }ORDER BY wpID";
+
+       console.log(query_wp);
+
+       wpURL =  "http://sparql.wikipathways.org/";
+
+       var queryUrl = encodeURI( wpURL + "?query="+query_wp+"&format=json" );
+       $.ajax({
+           dataType: "jsonp",
+           url: queryUrl,
+           success: function( _data ) {
+              console.log(
+              JSON.stringify(_data, undefined, 2)
+              )
+            }
+          });
+        );
 </script>
 </body>
 </html>
