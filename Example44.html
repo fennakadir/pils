@@ -9,7 +9,7 @@
 <body>
   <pre id="output"></pre>
   <script>
-    query = "SELECT ?geneLabel ?diseaseLabel ?pathwayLabel ?pathwayID WHERE { ?disease	wdt:P2293 ?gene . ?disease wdt:P279*  wd:Q42844 . ?pathway wdt:P31 wd:Q4915012 ; wdt:P527 ?gene . ?pathway wdt:P2410 ?pathwayID }"
+    query = "SELECT ?geneLabel ?diseaseLabel ?pathwayLabel ?pathwayID WHERE { ?disease	wdt:P2293 ?gene . ?disease wdt:P279*  wd:Q55950055 . ?pathway wdt:P31 wd:Q4915012 ; wdt:P527 ?gene . ?pathway wdt:P2410 ?pathwayID }"
     fetch(
       wdk.sparqlQuery(query)
     ).then( response => response.json()
