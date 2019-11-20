@@ -52,14 +52,26 @@
 
                 // WIKIPATHWAYS
        var j;
-       var wpVALUES = "VALUES ?wpID {";
+       var wpVALUES = "VALUES ?pwID {";
        var idURL = "<http://identifiers.org/wikipathways/"
        for (j = 0; j < response.length; j++){
            wpVALUES = wpVALUES + idURL + response[j].pathwayID + "> ";
        }
        wpVALUES = wpVALUES + "}"
 
-       query_wp = "PREFIX wp:    <http://vocabularies.wikipathways.org/wp#> SELECT DISTINCT ?wpID ?pathway ?interaction ?participants ?DataNodeLabel WHERE {" + wpVALUES + " ?pathway a wp:Pathway . ?pathway dc:identifier ?wpID . ?interaction dcterms:isPartOf ?pathway . ?interaction a wp:Interaction . ?interaction wp:participants ?participants . ?participants a wp:DataNode . ?participants rdfs:label ?DataNodeLabel . }ORDER BY wpID";
+       query_wp =  `
+                    PREFIX wp:      <http://vocabularies.wikipathways.org/wp#>
+
+                    SELECT DISTINCT ?pwID ?pathway ?interaction ?participants ?DataNodeLabel WHERE {` + wpVALUES + `
+                    ?pathway a wp:Pathway .
+                    ?pathway dc:identifier ?pwID .
+                    ?interaction dcterms:isPartOf ?pathway .
+                    ?interaction a wp:Interaction .
+                    ?interaction wp:participants ?participants .
+                    ?participants a wp:DataNode .
+                    ?participants rdfs:label ?DataNodeLabel .
+                  }
+                  ORDER BY ?pwID`;
 
        console.log(query_wp);
 
@@ -67,15 +79,16 @@
 
        var queryUrl = encodeURI( wpURL + "?query="+query_wp+"&format=json" );
        $.ajax({
-           dataType: "jsonp",
-           url: queryUrl,
-           success: function( _data ) {
-              console.log(
-              JSON.stringify(_data, undefined, 2)
-              )
-            }
-          });
-        );
+          dataType: "jsonp",
+          url: queryUrl,
+          success: function( _data ) {
+              console.log(JSON.stringify(_data, undefined, 2))
+          }
+       });
+    }
+  )
+
+
 </script>
 </body>
 </html>
