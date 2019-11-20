@@ -52,10 +52,9 @@
        for (j = 0; j < response.length; j++){
            wpVALUES = wpVALUES + idURL + response[j].pathwayID + "> ";
        }
-       wpVALUES = wpVALUES + "}"
-       query_wp =  `
-                    PREFIX wp:      <http://vocabularies.wikipathways.org/wp#>
-                    SELECT DISTINCT ?pwID ?pathway ?interaction ?source ?target 
+       wpVALUES = wpVALUES + "}";
+      
+       query_wp =  `SELECT DISTINCT ?pwID ?pathway ?interaction ?source ?target 
                     WHERE {` + wpVALUES + `
                       ?pathway a wp:Pathway .
                       ?pathway dc:identifier ?pwID .
