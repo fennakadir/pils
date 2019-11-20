@@ -16,13 +16,6 @@
 </head>
 
 <body>
-  <table class="tabl">
-    <thead >
-      <th>Gene</th><th>Pathway</th><th>WikiPathwayID</th>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
 <pre id="output"></pre>
 <script>
   query_wikidata = 'SELECT ?geneLabel ?pathwayLabel ?pathwayID WHERE { ?disease	wdt:P2293 ?gene . ?disease wdt:P279*  wd:Q55950055. ?pathway wdt:P31 wd:Q4915012 ; wdt:P527 ?gene . ?pathway wdt:P2410 ?pathwayID SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}';
@@ -38,13 +31,7 @@
           var id = response[i].pathwayID;
           fullURL = wpURL + id;
         }
-        var tr = d3.select(".tabl tbody")
-                   .selectAll("tr")
-                   .data(response)
-                   .enter().append("tr");
-        var td = tr.selectAll("td").data(function(d, i) { return Object.values(d); })
-                   .enter().append("td")
-                   .text(function(d) { return d; });
+        console.log(response);
                 // WIKIPATHWAYS
        var j;
        var wpVALUES = "VALUES ?pwID {";
