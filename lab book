@@ -27,5 +27,19 @@ WHERE {
 	}
   }
   
-  
- 
+  20-11-19
+  - finalize our wikidata query 
+ SELECT ?geneLabel ?diseaseLabel ?pathwayLabel ?pathwayID 
+ WHERE { ?disease	wdt:P2293 ?gene . 
+ ?disease wdt:P279*  wd:Q55950055. 
+ ?pathway wdt:P31 wd:Q4915012 ; 
+ 	wdt:P527 ?gene . 
+?pathway wdt:P2410 ?pathwayID 
+
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". 
+}
+- decided to visualize the pathways by accessing the sparql endpoint of wikipathways, and getting the interactions and participants
+of each pathway. wikipathways queries:
+
+- figure out how to link the two queries together in js. The output of the wikidata query (pathway identifiers) are the input for the wikipathways query. 
+
