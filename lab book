@@ -38,8 +38,52 @@ WHERE {
 
 SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". 
 }
-- decided to visualize the pathways by accessing the sparql endpoint of wikipathways, and getting the interactions and participants
-of each pathway. wikipathways queries:
+- decided to visualize the pathways by accessing the sparql endpoint of wikipathways, and getting the interactions 
+and participants of each pathway. wikipathways queries:
 
-- figure out how to link the two queries together in js. The output of the wikidata query (pathway identifiers) are the input for the wikipathways query. 
+- figure out how to link the two queries together in js. The output of the wikidata query (pathway identifiers) are the 
+input for the wikipathways query. 
+
+26-11-2019 
+- visualize our query data with D3 mobile patent suits
+with this we encountered some problems:
+	- no directionality 
+	- missing components from pathway 
+	- only one pathway 
+	- elements that interact with themselves, those interactions are not shown 
+
+- trying to change query to also obtain other components pathway 
+this was achieved with:
+SELECT DISTINCT ?component
+WHERE {  VALUES ?pwID {<http://identifiers.org/wikipathways/WP1603>}
+       ?pathway a wp:Pathway .
+       ?pathway dc:identifier ?pwID .
+       ?component dcterms:isPartOf ?pathway 
+}
+however with this query we need to sort the different results into: interaction, source, target, receptor, 
+metabolite etc ourselves with javascrip. 
+- then we tried out queries that did that function for us. Turned out to be quite difficult. So we are considering making 2 
+queries one for the interaction,source and target. With the other one the components (exclusinf interaction, source and target)
+are iterated through with javascript and added to the pathway if they are absent. 
+We figured out a query that filters out the source, target and interaction from all the components:
+SELECT DISTINCT ?component
+WHERE {  VALUES ?pwID {<http://identifiers.org/wikipathways/WP1603>}
+       ?pathway a wp:Pathway .
+       ?pathway dc:identifier ?pwID .
+       ?component dcterms:isPartOf ?pathway . 
+
+       MINUS {
+       ?component dcterms:isPartOf ?pathway ;
+                  a wp:Interaction . 
+       }
+       MINUS {
+       ?component dcterms:isPartOf ?pathway ;
+                  wp:source ?source . 
+       }
+       MINUS {
+       ?component dcterms:isPartOf ?pathway ;
+                  wp:target ?target . 
+       }
+
+} 
 
