@@ -1,0 +1,63 @@
+<html>
+<head>
+  <!-- Initialize a global WBK function -->
+  <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikibase-sdk.min.js"></script>
+  <!-- Initialize a global wdk object using the WBK object -->
+  <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikidata-sdk.min.js"></script>
+  <!-- Initialize d3 library -->
+  <script src="https://d3js.org/d3.v3.min.js"></script>
+  <!-- AJAX -->
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+
+  <script src="queries.js"></script>
+  <style>
+
+  .link {
+    fill: none;
+    stroke: #666;
+    stroke-width: 5px;
+  }
+
+  #licensing {
+    fill: green;
+  }
+
+  .link.licensing {
+    stroke: green;
+  }
+
+  .link.resolved {
+    stroke-dasharray: 0,2 1;
+  }
+
+  circle {
+    fill: #80bbc5;
+    stroke: #333;
+    stroke-width: 1.5px;
+  }
+
+  text {
+    font: 10px sans-serif;
+    pointer-events: none;
+    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+  }
+
+  </style>
+</head>
+
+<body>
+  <div>
+    <button type="button" onclick="wikidataQuery();">Find Pathways!</button>
+  </div>
+  <div id="pathwayList">
+    <table id="pathTable">
+    </table>
+  </div>
+
+<script id="WikiPathways">
+        
+
+  </script>
+
+</body>
+</html>
