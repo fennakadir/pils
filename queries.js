@@ -6,7 +6,8 @@ function wikidataQuery(){
                         ?pathway wdt:P31 wd:Q4915012 ;
                                  wdt:P527 ?gene .
                         ?pathway wdt:P2410 ?pathwayID .
-                        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}`;
+                        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
+                        ORDER BY ?pathwayID`;
 
     fetch(
       wdk.sparqlQuery(query_wikidata)
@@ -17,21 +18,26 @@ function wikidataQuery(){
       // CReate table with Pathway links
       var tab = document.getElementById("pathTable");
       for (var i = 0; i < response.length; i++) {
-        var row = tab.insertRow(i);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var a = document.createElement("p");
-        a.id = response[i].pathwayID;
 
-        a.setAttribute('onclick',test())
-        //a.onClick = "wikipathwaysQuery("+ response[i].pathwayID +")";
-        a.appendChild(document.createTextNode(response[i].pathwayLabel));
-        cell1.appendChild(a);
-        cell2.innerHTML = response[i].pathwayID;
+        if (i == 0 || response[i].pathwayID != response[i-1].pathwayID){
+          var row = tab.insertRow(i);
+          var cell1 = row.insertCell(0);
+          var cell2 = row.insertCell(1);
+          var a = document.createElement("p");
+          a.id = response[i].pathwayID;
+          a.setAttribute('onclick','wikipathwaysQuery('+response[i].pathwayID+');')
+          //a.onClick = "wikipathwaysQuery("+ response[i].pathwayID +")";
+          a.appendChild(document.createTextNode(response[i].pathwayLabel));
+          cell1.appendChild(a);
+          cell2.innerHTML = response[i].pathwayID;
+        } else {
+          var row = tab.insertRow(i);
+        }
       }
     }
   )
 }
+
 
 function test(){
   console.log("abcdefg")
@@ -40,33 +46,21 @@ function test(){
 function wikipathwaysQuery(pwID){
   // WIKIPATHWAYS QUERY
 
-  // Generate wikipathway url
-  var wpURL = 'https://www.wikipathways.org/index.php/Pathway:';
-  for (var i = 0; i < response.length; i++) {
-    var id = response[i].pathwayID;
-    fullURL = wpURL + id;
-  }
-
-
- var pwID = "<http://identifiers.org/wikipathways/" + document.getElementById('id') + ">";
+ var linkpwID = "<http://identifiers.org/wikipathways/" + pwID.id + ">";
 
  // Construct WP query
- query_wp =  `SELECT DISTINCT ?pwID ?interaction ?source  ?sourceLabel ?target ?targetLabel
+ query_wp =  `SELECT DISTINCT ?interaction ?source ?sourceLabel ?target ?targetLabel
               WHERE {
                 ?pathway a wp:Pathway .
-                ?pathway dc:identifier + ` + pwID + ` .
+                ?pathway dc:identifier + ` + linkpwID + ` .
                 ?interaction dcterms:isPartOf ?pathway .
                 ?interaction a wp:Interaction .
                 ?interaction wp:source ?source .
-                ?source rdfs:label ?sourceLabel .
-                #?source wp:isAbout ?gpmlSource .
-                #?gpmlSource gpml:graphId ?sourceId .
                 ?interaction wp:target ?target .
+                ?source rdfs:label ?sourceLabel .
                 ?target rdfs:label ?targetLabel .
-                #?target wp:isAbout ?gpmlTarget .
-                #?gpmlTarget gpml:graphId ?targetId .
                 }
-                ORDER BY ?pwID`;
+                ORDER BY ?interaction`;
 
 // construct URL
  wpURL =  "http://sparql.wikipathways.org/";
@@ -79,64 +73,33 @@ function wikipathwaysQuery(pwID){
     success: function( _data ) {
 
       //simplify results
-      _data = wdk.simplify.sparqlResults(_data)
-      console.log(_data)
-
-      // Create a PATWHAYS object
-      //   every pathway is a separate property
-      //     every 'pathway' has a 'interacitons' property
-      //       every 'interactions' has a 'source' and a 'target' properties
-      var pathways = {}
-
-      for (var k = 0; k < _data.length; k++){
-        var tempID = "";
-        for (var t = 36; t <42; t++){
-          if(_data[k].pwID[t] !== undefined )
-          tempID = tempID + _data[k].pwID[t]
-        }
-        if (pathways[tempID] === undefined){
-          pathways[tempID] = {interactions: [
-            {intID: _data[k].interaction, source: _data[k].source, target: _data[k].target}
-        ]}
-        }else {
-          if (_data[k].interaction != _data[k-1].interaction){
-            pathways[tempID].interactions.push({intID: _data[k].interaction, source: _data[k].source, target: _data[k].target})
-          }
-        }
-      }
-      console.log(pathways)
-
-      // Stores all interactions
-      var all_links = []
-      for (var i in pathways) {
-          all_links.push(pathways[i].interactions)
-      }
-      console.log(all_links)
+      var data = wdk.simplify.sparqlResults(_data)
+      console.log(data)
 
       // Select which pathway we want to visualize the interactions of
       //var links = all_links[5]
       var links = []
-      var selected = "WP1603"
-      for (var i = 0; i < pathways[selected].interactions.length; i++){
-        links.push({source: pathways[selected].interactions[i].source.label,
-                    source_link: pathways[selected].interactions[i].soure,
-                    target: pathways[selected].interactions[i].target.label,
-                    target_link: pathways[selected].interactions[i].target})
+      for (var i = 0; i < data.length; i++){
+        if (i == 0 || data[i].interaction != data[i-1].interaction){
+            links.push({source: data[i].source.label,
+                        target: data[i].target.label,
+                        type: "suit"})
+        }
       }
       console.log(links)
 
       // Compute the distinct nodes from the links.
       var nodes = [];
 
-      for (var i = 0; i < links.length; i++) {
-          nodes.push({name:links[i].source});
-          nodes.push({name:links[i].target});
-      }
+      // for (var i = 0; i < links.length; i++) {
+      //     nodes.push({name:links[i].source});
+      //     nodes.push({name:links[i].target});
+      // }
 
-      // links.forEach(function(link) {
-      //   link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-      //   link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
-      // });
+      links.forEach(function(link) {
+        link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+        link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+      });
 
 
       var width = 940*2;
