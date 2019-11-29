@@ -1,10 +1,13 @@
-// QUERIES wikidata for all diseases
+// QUERIES wikidata for all diseases and creates SELECTION element in HTML
 {
   query_disease = `SELECT DISTINCT ?disease ?diseaseLabel
                   WHERE {
                   ?disease wdt:P31 wd:Q12136 .
-                  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
-                  LIMIT 50`;
+                  ?disease	wdt:P2293 ?gene .
+                  ?pathway wdt:P31 wd:Q4915012 ;
+                            wdt:P527 ?gene .
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+                } ORDER BY ?diseaseLabel`;
   fetch(
   wdk.sparqlQuery(query_disease)
   ).then( response => response.json()
@@ -15,18 +18,20 @@
       var option = document.createElement("option");
       option.text = response[i].disease.label;
       option.value = `wd:`+response[i].disease.value;
-      var select = document.getElementById("mySelect");
+      var select = document.getElementById("disease_selection");
       select.appendChild(option);
     }
   }
   )
 }
 
+// Queries WIKIDATA for all the GENES associated with the selected disease
+// and all the PATHWAYS associated with those genes
 function wikidataQuery(){
-
-    var wdID = document.getElementById("mySelect").value;
+    console.log('starting query')
+    var wdID = document.getElementById("disease_selection").value;
     // WIKIDATA QUERY
-    query_wikidata = `SELECT ?geneLabel ?pathwayLabel ?pathwayID
+    query_wikidata = `SELECT DISTINCT ?geneLabel ?pathwayLabel ?pathwayID ?interaction
                       WHERE { ?disease	wdt:P2293 ?gene .
                         ?disease wdt:P279*  `+ wdID +`.
                         ?pathway wdt:P31 wd:Q4915012 ;
@@ -34,7 +39,6 @@ function wikidataQuery(){
                         ?pathway wdt:P2410 ?pathwayID .
                         SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
                         ORDER BY ?pathwayID`;
-
     fetch(
       wdk.sparqlQuery(query_wikidata)
     ).then( response => response.json()
@@ -42,17 +46,18 @@ function wikidataQuery(){
     ).then(
     function (response) {
 
-      console.log(response);
-
-      // CReate table with Pathway links
+  console.log('finished query')
+// -------------------- Create TABLE with Pathways -----------------------------
       var tab = document.getElementById("pathTable");
 
+      // If new disease is selected, remove pathways from previous query
       if (document.getElementsByClassName("newrow").length > 0){
         d3.selectAll(".newrow").remove();
       }
 
+      // Add each pathway to the table
       for (var i = 0; i < response.length; i++) {
-        if (i == 0 || response[i].pathwayID != response[i-1].pathwayID){
+        if (i == 0 || response[i].pathwayID != response[i-1].pathwayID ){
           var row = tab.insertRow(i);
           row.className = "newrow"
           var cell1 = row.insertCell(0);
@@ -78,11 +83,12 @@ function wikidataQuery(){
           var row = tab.insertRow(i);
         }
       }
+// ----------------- END OF CREATE TABLE ---------------------------------------
     }
   )
 }
 
-// Queries WIKIPATHWAYS for all the pathways in which the GENES related to the selected DISEASE are found
+// Queries WIKIPATHWAYS for all the interactions in the selected pathway
 // and VISUALIZES them (d3.js)
 function wikipathwaysQuery(pwID){
 
@@ -116,30 +122,29 @@ function wikipathwaysQuery(pwID){
       //simplify results
       var data = wdk.simplify.sparqlResults(_data)
 
-      // Select which pathway we want to visualize the interactions of
-      //var links = all_links[5]
+      // Store pathway interactions with respective source + target
       var links = []
       for (var i = 0; i < data.length; i++){
         if (i == 0 || data[i].interaction != data[i-1].interaction){
             links.push({source: data[i].source.label,
+                        sourceurl: data[i].source.value,
                         target: data[i].target.label,
-                        type: "suit"})
+                        targeturl: data[i].target.value,
+                        type: "directed-interaction",
+                        })
         }
       }
 
       // Compute the distinct nodes from the links.
       var nodes = [];
 
-      // for (var i = 0; i < links.length; i++) {
-      //     nodes.push({name:links[i].source});
-      //     nodes.push({name:links[i].target});
-      // }
-
       links.forEach(function(link) {
-        link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-        link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+        link.source = nodes[link.source] || (nodes[link.source] = {name: link.source, url: link.sourceurl});
+        link.target = nodes[link.target] || (nodes[link.target] = {name: link.target, url: link.sourceurl});
       });
 
+
+// -------------- PATHWAY VISUALIZATION with d3.js library ---------------------
       {
       var width = 1500;
           height = 1500;
@@ -152,20 +157,21 @@ function wikipathwaysQuery(pwID){
         .attr("height", height);
 
 
-        // Per-type markers, as they don't inherit styles.
+        // Per-type markers
         svg.append("defs").selectAll("marker")
-            .data(["suit", "licensing", "resolved"])
+            .data(["directed-interaction"])
           .enter().append("marker")
             .attr("id", function(d) { return d; })
             .attr("viewBox", "0 -5 10 10")
             .attr("refX", 15)
             .attr("refY", -1.5)
-            .attr("markerWidth", 6)
-            .attr("markerHeight", 6)
+            .attr("markerWidth", 5)
+            .attr("markerHeight", 5)
             .attr("orient", "auto")
             .append("path")
-            .attr("d", "M0,-5L10,0L0,5");
+            .attr("d", "M 0,-5 L 10,0 L 0,5");
 
+      // Apply force to the graph
       var force = d3.layout.force()
         .nodes(d3.values(nodes))
         .links(links)
@@ -175,18 +181,32 @@ function wikipathwaysQuery(pwID){
         .on("tick", tick)
         .start();
 
+      // Add links (interactions) as paths in the graph
       var path = svg.append("g").selectAll("path")
         .data(force.links())
         .enter().append("path")
         .attr("class", function(d) { return "link " + d.type; })
         .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
+      // Add nodes (pathway elements) as circles in the graph
       var circle = svg.append("g").selectAll("circle")
         .data(force.nodes())
         .enter().append("circle")
         .attr("r", 15)
-        .call(force.drag);
+        .call(force.drag)
+        .on('dblclick',function(d){
+          window.open(d.url,'_blank');
+          })
+        .on('mouseover',function(d){
+            d3.select(this).style("fill", "white");
+            d3.select(this).style("cursor", "pointer");
+          })
+        .on("mouseout", function(d) {
+          d3.select(this).style("fill", "#80bbc5");
+          d3.select(this).style("cursor", "default");
+        });
 
+      // Add names to nodes
       var text = svg.append("g").selectAll("text")
         .data(force.nodes())
         .enter()
@@ -194,7 +214,7 @@ function wikipathwaysQuery(pwID){
         .attr("x", 8)
         .attr("y", ".31em")
         .text(function(d) { return d.name; });
-      }
+
 
       // Use elliptical arc path segments to doubly-encode directionality.
       function tick() {
@@ -207,21 +227,25 @@ function wikipathwaysQuery(pwID){
         var dx = d.target.x - d.source.x,
             dy = d.target.y - d.source.y,
             dr = Math.sqrt(dx * dx + dy * dy);
-        return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+        return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr +
+                                " 0 0,1 " + d.target.x + "," + d.target.y;
       }
 
       function transform(d) {
         return "translate(" + d.x + "," + d.y + ")";
       }
+      }
     }
- });
-
+// ------------------ END OF Pathway VISUALIZATION -----------------------------
+  }); // End of AJAX query for WP query
 }
+// ----------------------- END OF wikipathwaysQuery() ------------------------
 
-// Make the SELECTION element draggable:
-// Code adapted from https://www.w3schools.com/howto/howto_js_draggable.asp
+//-------------------- Make the SELECTION element DRAGGABLE --------------------
+    // Code adapted from https://www.w3schools.com/howto/howto_js_draggable.asp
 {
   dragElement(document.getElementById("drag"));
+
   function dragElement(elmnt) {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     if (document.getElementById(elmnt.id + "header")) {
@@ -263,9 +287,11 @@ function wikipathwaysQuery(pwID){
     }
   }
 }
+//----------------------------- END OF DRAGGABLE -------------------------------
 
+// -------------------- MINIMIZE the pathway selection box ---------------------
 function minimize(){
-  var x = document.getElementById("selection");
+  var x = document.getElementById("pathway_selection");
   var b = document.getElementById("minimize");
   if (x.style.display === "none") {
     x.style.display = "block";
@@ -275,3 +301,4 @@ function minimize(){
     b.innerHTML = "Show";
   }
 }
+// ---------------------------- END OF MINIMIZE --------------------------------
