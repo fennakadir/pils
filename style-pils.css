@@ -32,9 +32,23 @@ a:visited {
   color: blue;
 }
 
-#minimize {
-  margin-bottom: 20 ;
+#disease_selection {
+  padding:10;
 }
+
+#minimize {
+  background: none!important;
+  border: none;
+  padding: 0!important;
+  color: #069;
+  text-decoration: none;
+  cursor: pointer;
+  margin-bottom: 20 ;
+  margin-left: 10;
+}
+
+
+
 
 #drag {
   background-color: rgb(0,0,0,0.2);
@@ -53,7 +67,7 @@ a:visited {
     margin-bottom: 20px;
 }
 
-#selection {
+#pathway_selection {
   display: block;
 }
 
@@ -63,17 +77,6 @@ a:visited {
   stroke-width: 5px;
 }
 
-#licensing {
-  fill: green;
-}
-
-.link.licensing {
-  stroke: green;
-}
-
-.link.resolved {
-  stroke-dasharray: 0,2 1;
-}
 
 circle {
   fill: #80bbc5;
