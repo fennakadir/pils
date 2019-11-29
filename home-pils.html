@@ -13,13 +13,15 @@
 </head>
 
 <body>
-  <div id="wrap">
-    <select id="mySelect">
+  <div id="header">
+  </div>
+  <div id="main">
+    <select id="disease_selection">
       <option>Select your disease here!</option>
     </select>
     <div id="drag">
       <button type="button" onclick="minimize();" id="minimize">Minimize</button>
-      <div id="selection">
+      <div id="pathway_selection">
         <button id="find" type="button" onclick="wikidataQuery();">Find Pathways</button>
         <div id="pathwayList">
           <table id="pathTable">
