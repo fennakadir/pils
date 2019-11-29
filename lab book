@@ -87,3 +87,48 @@ WHERE {  VALUES ?pwID {<http://identifiers.org/wikipathways/WP1603>}
 
 } 
 
+27-11-2019 
+- finalising our queries and making sure we can visualise the pathways as accurate as possible.
+wikdata: 
+SELECT DISTINCT ?geneLabel ?pathwayLabel ?pathwayID ?interaction
+                      WHERE { ?disease	wdt:P2293 ?gene .
+                        ?disease wdt:P279*  `+ wdID +`.
+                        ?pathway wdt:P31 wd:Q4915012 ;
+                                 wdt:P527 ?gene .
+                        ?pathway wdt:P2410 ?pathwayID .
+                        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
+                        ORDER BY ?pathwayID
+			
+wiki pathways:
+SELECT DISTINCT ?interaction ?source ?sourceLabel ?target ?targetLabel
+              WHERE {
+                ?pathway a wp:Pathway .
+                ?pathway dc:identifier + ` + linkpwID + ` .
+                ?interaction dcterms:isPartOf ?pathway .
+                ?interaction a wp:Interaction .
+                ?interaction wp:source ?source .
+                ?interaction wp:target ?target .
+                ?source rdfs:label ?sourceLabel .
+                ?target rdfs:label ?targetLabel .
+                }
+                ORDER BY ?interaction
+		
+- On top of that we added another layor of complexity by adding another query that queries all the diseases from wikidata 
+that has pathways we can visualize. 
+second wikidata query:
+SELECT DISTINCT ?disease ?diseaseLabel
+                  WHERE {
+                  ?disease wdt:P31 wd:Q12136 .
+                  ?disease	wdt:P2293 ?gene .
+                  ?pathway wdt:P31 wd:Q4915012 ;
+                            wdt:P527 ?gene .
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+                } ORDER BY ?diseaseLabel
+
+In this way the user can select a disease on our interface, and then select an associated pathway and visualise it. 
+
+29-11 
+- last tweaking of the css and start preparing the presentation. 
+
+
+
