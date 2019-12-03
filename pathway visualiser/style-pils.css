@@ -1,14 +1,101 @@
+#header {
+  background-color:  rgb(184, 226, 255,0.2);
+  padding: 2%;
+}
+
+#um{
+  width:360;
+  height: 80;
+  float: right;
+  margin-top: 1.2%;
+  background-color: white;
+}
+
+#msp{
+  width: 120;
+  height: 120;
+  float:left;
+  margin-bottom: -2%;
+}
+
+
+#tit-subtit{
+  text-align: center;
+}
+
+#title {
+  font-size: 60;
+  font-weight: bolder;
+}
+
+.showdesc{
+  padding-left: -5;
+}
+
+h4 {
+  text-align: center;
+}
+
+.desc-box {
+  margin-top: 1%;
+  padding: 1%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background-color: #80bbc5;
+}
+
+.db{
+  margin:1%;
+  padding:1%;
+  background-color: white;
+}
+
+
+.proscons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+#selecteddisease{
+  text-align: center;
+  font-size: 24;
+  font-weight: bold;
+}
+
+#textselect {
+  margin-left: 5%;
+  background-color: white;
+  padding: 1% 2% 1% 1%;
+}
+
+#disease_selection {
+  padding:10;
+}
+
+#disselect {
+  background-color: #5485ff;
+}
+
+#disease_selection {
+  margin: 1%;
+}
+
+#find {
+  background-color: #ffdb66; #80bbc5;
+  color: #003ac9;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+
 #pathTable {
     width: auto;
     table-layout: fixed;
     border-collapse: collapse;
-}
-
-#pathTable tbody{
-  display:block;
-  width: 100%;
-  overflow: auto;
-  height: 500px;
 }
 
 .newcell2 {
@@ -24,6 +111,17 @@
   text-align: center;
 }
 
+#pathTable tbody{
+  display:block;
+  width: 100%;
+  overflow: auto;
+  height: 500px;
+}
+
+#pathway {
+  margin-left: 10%;
+}
+
 a {
   text-decoration: none;
 }
@@ -32,43 +130,36 @@ a:visited {
   color: blue;
 }
 
-#disease_selection {
-  padding:10;
-}
-
 #minimize {
   background: none!important;
   border: none;
   padding: 0!important;
   color: #069;
-  text-decoration: none;
+  text-decoration: underline;
   cursor: pointer;
   margin-bottom: 20 ;
   margin-left: 10;
 }
 
-
-
+#minimize:hover {
+  text-decoration: none;
+}
 
 #drag {
-  background-color: rgb(0,0,0,0.2);
+
+  background-color: rgb(184, 226, 255,0.5);
+  #background-color: rgb(0,0,0,0.2);
+  #background-color: rgba(84, 133, 255, 0.2);
   position: absolute;
   padding: 1%;
 }
 
-#find {
-  background-color: #80bbc5; /* Green */
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
 #pathway_selection {
   display: block;
+}
+
+#pathname {
+  text-align: center;
 }
 
 .link {
