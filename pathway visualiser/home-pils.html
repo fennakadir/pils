@@ -4,25 +4,85 @@
   <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikibase-sdk.min.js"></script>
   <!-- Initialize a global wdk object using the WBK object -->
   <script src="https://cdn.rawgit.com/maxlath/wikidata-sdk/dist/dist/wikidata-sdk.min.js"></script>
-  <!-- Initialize d3 library -->
+  <!-- d3 library -->
   <script src="https://d3js.org/d3.v3.min.js"></script>
   <!-- AJAX -->
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="style-pils.css">
+  <!--BOOTSTRAP-->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+  <title>Pathway Visualizer PRA3006</title>
 </head>
 
 <body>
   <div id="header">
+    <a href="https://www.maastrichtuniversity.nl/education/bachelor/bachelor-maastricht-science-programme" target="_blank">
+      <img  id="msp" src="C:\Users\tamma\Documents\Maastricht\Courses\PRA3006 Programming in the Life Sciences\img\msp-logo.jpg">
+    </a>
+    <a href="https://www.maastrichtuniversity.nl/" target="_blank">
+      <img  id="um" src="C:\Users\tamma\Documents\Maastricht\Courses\PRA3006 Programming in the Life Sciences\img\um-logo.svg">
+    </a>
+    <div id="tit-subtit">
+      <h1 id="title">Pathway Visualizer</h1>
+      <span align="center" id="sub">PRA3006: Programming in the Life Sciences - Fenna Kadir & Ruben Tammaro - 2019<br></span>
+      <a class="showdesc" id="desctoggle" onclick="showhide();" href="#desc" data-toggle="collapse"><b>+</b> Show Description</a>
+    </div>
+      <div id="desc" class="collapse">
+        <div class="desc-box">
+          <div class="db">
+            <h4>The Tool</h4>
+            <p>Pathway Visualizer allows you to investigate all the pathways associated with 2338 different diseases.<br><br>
+              Simply select a disease and a list of pathways associated with it will be displayed.<br><br>
+              Select a pathway and it will be visualized within a force-directed graph.<br><br>
+              Clicking on the pathway's ID will link you to its WikiPathways page.<br>
+            </p>
+          </div>
+          <div class="db">
+            <h4>The Graph</h4>
+            <p>
+              Nodes represent gene products or metabolites.<br><br>
+              <i>More information on the nodes can be accessed by double clicking on them.</i><br><br>
+              Arrow-lines represent directed interactions between the elements of the pathway.<br><br>
+              <i>Arrow-heads alone pointing at a node signify self-regulation.</i><br>
+            </p>
+          </div>
+          <div class="db">
+            <h4>Pros & Cons</h4>
+            <p>
+              <div class="proscons">
+                <div style="margin:1%;">
+                  <b>Pros:</b> <br>
+                  -Easy visual identification of hub nodes.<br>
+                  -Quickly scan through all pathways associated with a disease. <br>
+                  -Quick access to WikiPathways and other databases.
+                </div>
+                <div style="margin:1%;">
+                  <b>Cons:</b> <br>
+                  -Some components of some pathways might not be represented. <br>
+                  -Graph does not distinguish between different compartments.
+                </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
   <div id="main">
-    <select id="disease_selection">
-      <option>Select your disease here!</option>
-    </select>
+    <div id="disselect">
+      <strong id="textselect">Select your disease:</strong>
+      <select id="disease_selection">
+        <option>-----------------------</option>
+      </select>
+      <button id="find" type="button" onclick="wikidataQuery();">Find Pathways</button>
+    </div>
     <div id="drag">
       <button type="button" onclick="minimize();" id="minimize">Minimize</button>
       <div id="pathway_selection">
-        <button id="find" type="button" onclick="wikidataQuery();">Find Pathways</button>
+        <p id="selecteddisease">No disease has been selected!</p>
         <div id="pathwayList">
           <table id="pathTable">
             <!-- Here are added the pathways as the queries are completed -->
@@ -31,10 +91,13 @@
       </div>
     </div>
     <div id="pathway">
+      <h3 id="pathname"></h3>
       <!-- Here the FORCE-DIRECTED GRAPH SVG element is appended when a pathway is visualized -->
     </div>
   </div>
 
 <script src="script-pils.js"></script>
+
+
 </body>
 </html>
