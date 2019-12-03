@@ -219,8 +219,8 @@ function wikipathwaysQuery(pwID){
 // -------------- PATHWAY VISUALIZATION with d3.js library ---------------------
       {
 
-        var width = 1500;
-            height = 1200;
+        var width = 1000;
+            height = 700;
 
         console.log(countnodes);
         if (countnodes > 60){
