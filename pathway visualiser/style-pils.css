@@ -70,14 +70,11 @@ h4 {
 
 #disease_selection {
   padding:10;
+  margin: 1%;
 }
 
 #disselect {
   background-color: #5485ff;
-}
-
-#disease_selection {
-  margin: 1%;
 }
 
 #find {
