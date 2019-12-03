@@ -25,13 +25,61 @@
   )
 }
 
+// Make the SELECTION element DRAGGABLE
+// Code adapted from https://www.w3schools.com/howto/howto_js_draggable.asp
+{
+  dragElement(document.getElementById("drag"));
+
+  function dragElement(elmnt) {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    if (document.getElementById(elmnt.id + "header")) {
+      // if present, the header is where you move the DIV from:
+      document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+    } else {
+      // otherwise, move the DIV from anywhere inside the DIV:
+      elmnt.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+      elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+      elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+      // stop moving when mouse button is released:
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
+}
+
+
 // Queries WIKIDATA for all the GENES associated with the selected disease
 // and all the PATHWAYS associated with those genes
 function wikidataQuery(){
-    console.log('starting query')
+
     var wdID = document.getElementById("disease_selection").value;
     // WIKIDATA QUERY
-    query_wikidata = `SELECT DISTINCT ?geneLabel ?pathwayLabel ?pathwayID ?interaction
+    query_wikidata = `SELECT DISTINCT ?geneLabel ?pathwayLabel ?pathwayID
                       WHERE { ?disease	wdt:P2293 ?gene .
                         ?disease wdt:P279*  `+ wdID +`.
                         ?pathway wdt:P31 wd:Q4915012 ;
@@ -46,9 +94,13 @@ function wikidataQuery(){
     ).then(
     function (response) {
 
-  console.log('finished query')
+
 // -------------------- Create TABLE with Pathways -----------------------------
       var tab = document.getElementById("pathTable");
+
+      // Disease name
+      document.getElementById('selecteddisease').innerHTML =
+      document.getElementById('disease_selection').options[document.getElementById('disease_selection').selectedIndex].text;
 
       // If new disease is selected, remove pathways from previous query
       if (document.getElementsByClassName("newrow").length > 0){
@@ -59,26 +111,30 @@ function wikidataQuery(){
       for (var i = 0; i < response.length; i++) {
         if (i == 0 || response[i].pathwayID != response[i-1].pathwayID ){
           var row = tab.insertRow(i);
-          row.className = "newrow"
+          row.className = "newrow";
+
           var cell1 = row.insertCell(0);
           var cell2 = row.insertCell(1);
           var cell3 = row.insertCell(2);
           cell1.className = "newcell1";
           cell2.className = "newcell2";
           cell3.className = "newcell3";
+
           var p = document.createElement("a");
           p.id = response[i].pathwayID;
           p.className = "pathselect";
           p.href = "http://identifiers.org/wikipathways/" + response[i].pathwayID;
           p.target = "_blank"
           p.innerHTML = response[i].pathwayID;
-          //p.appendChild(document.createTextNode(response[i].pathwayLabel));
+
           cell1.appendChild(p);
           cell2.innerHTML = response[i].pathwayLabel;
-          cell3.innerHTML = '<button type="button" onClick="wikipathwaysQuery('+response[i].pathwayID+');">Visualize</button> '
+          cell3.innerHTML = '<button type="button" onClick="wikipathwaysQuery('+response[i].pathwayID+');">Visualize</button> ';
+
           if ((document.getElementsByClassName("newrow").length) % 2 == 0){
             row.style.backgroundColor = "rgb(255,255,255,0.5)";
           }
+
         } else {
           var row = tab.insertRow(i);
         }
@@ -91,6 +147,20 @@ function wikidataQuery(){
 // Queries WIKIPATHWAYS for all the interactions in the selected pathway
 // and VISUALIZES them (d3.js)
 function wikipathwaysQuery(pwID){
+
+  x = document.getElementById('pathTable');
+
+  try {
+    for (var i = 0; i < x.tBodies[0].childElementCount; i++) {
+      if (x.rows[i].cells[0].innerText == pwID.id && x.rows[i].cells.length != 0){
+        document.getElementById('pathname').innerHTML = x.rows[i].cells[1].innerHTML;
+        break;
+      }
+    }
+  } catch (e) {
+    console.log(e)
+  }
+
 
   // WIKIPATHWAYS LINK for query
  var linkpwID = "<http://identifiers.org/wikipathways/" + pwID.id + ">";
@@ -137,18 +207,26 @@ function wikipathwaysQuery(pwID){
 
       // Compute the distinct nodes from the links.
       var nodes = [];
-
+      var countnodes = 0;
       links.forEach(function(link) {
         link.source = nodes[link.source] || (nodes[link.source] = {name: link.source, url: link.sourceurl});
         link.target = nodes[link.target] || (nodes[link.target] = {name: link.target, url: link.sourceurl});
+        countnodes++;
+
       });
 
 
 // -------------- PATHWAY VISUALIZATION with d3.js library ---------------------
       {
-      var width = 1500;
-          height = 1500;
 
+        var width = 1500;
+            height = 1200;
+
+        console.log(countnodes);
+        if (countnodes > 60){
+          height = 1600;
+          width = 1600;
+            }
 
       d3.selectAll("svg").remove()
 
@@ -241,55 +319,8 @@ function wikipathwaysQuery(pwID){
 }
 // ----------------------- END OF wikipathwaysQuery() ------------------------
 
-//-------------------- Make the SELECTION element DRAGGABLE --------------------
-    // Code adapted from https://www.w3schools.com/howto/howto_js_draggable.asp
-{
-  dragElement(document.getElementById("drag"));
 
-  function dragElement(elmnt) {
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id + "header")) {
-      // if present, the header is where you move the DIV from:
-      document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-    } else {
-      // otherwise, move the DIV from anywhere inside the DIV:
-      elmnt.onmousedown = dragMouseDown;
-    }
-
-    function dragMouseDown(e) {
-      e = e || window.event;
-      e.preventDefault();
-      // get the mouse cursor position at startup:
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
-      // call a function whenever the cursor moves:
-      document.onmousemove = elementDrag;
-    }
-
-    function elementDrag(e) {
-      e = e || window.event;
-      e.preventDefault();
-      // calculate the new cursor position:
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      // set the element's new position:
-      elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-      elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-    }
-
-    function closeDragElement() {
-      // stop moving when mouse button is released:
-      document.onmouseup = null;
-      document.onmousemove = null;
-    }
-  }
-}
-//----------------------------- END OF DRAGGABLE -------------------------------
-
-// -------------------- MINIMIZE the pathway selection box ---------------------
+// MINIMIZE the pathway selection box
 function minimize(){
   var x = document.getElementById("pathway_selection");
   var b = document.getElementById("minimize");
@@ -301,4 +332,13 @@ function minimize(){
     b.innerHTML = "Show";
   }
 }
-// ---------------------------- END OF MINIMIZE --------------------------------
+
+// Change name to Show/Hide Description element
+function showhide(){
+  x = document.getElementById('desctoggle').innerHTML;
+  if (x[3] == '+') {
+    document.getElementById('desctoggle').innerHTML = "<b>-</b> Hide Description";
+  } else {
+    document.getElementById('desctoggle').innerHTML = "<b>+</b> Show Description";
+  }
+}
